@@ -1,3 +1,4 @@
+// NEW FILE
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -65,7 +66,7 @@ namespace FadeToGrey
         {
             if (energySystem == null)
             {
-                energySystem = FindObjectOfType<EnergySystem>();
+                energySystem = FindFirstObjectByType<EnergySystem>();
             }
 
             targetCutoff = maxCutoff;
@@ -127,3 +128,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

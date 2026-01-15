@@ -1,3 +1,4 @@
+// NEW FILE
 using System;
 using UnityEngine;
 
@@ -168,3 +169,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

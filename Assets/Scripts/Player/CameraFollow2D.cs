@@ -1,3 +1,4 @@
+// NEW FILE
 using UnityEngine;
 
 namespace FadeToGrey
@@ -45,6 +46,7 @@ namespace FadeToGrey
             if (target != null && useInitialOffset)
             {
                 offset = transform.position - target.position;
+                offset.z = -10f; // IMPORTANT: force camera Z
             }
         }
 
@@ -65,3 +67,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

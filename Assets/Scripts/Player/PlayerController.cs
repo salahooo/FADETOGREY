@@ -1,99 +1,52 @@
+// NEW FILE
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace FadeToGrey
 {
-    /// <summary>
-    /// Handles top-down 2D movement with Rigidbody2D physics, including energy-driven speed and input delay.
-    /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, PlayerControls.IPlayerActions
     {
         #region Serialized Fields
-        /// <summary>
-        /// Rigidbody2D used to move the player with physics-aware velocity changes.
-        /// </summary>
         [SerializeField] private Rigidbody2D body;
-
-        /// <summary>
-        /// Energy system that drives speed scaling and movement drain.
-        /// </summary>
         [SerializeField] private EnergySystem energySystem;
 
-        /// <summary>
-        /// Maximum movement speed when fully energized.
-        /// </summary>
         [SerializeField] private float maxSpeed = 6f;
-
-        /// <summary>
-        /// Minimum movement speed when fully exhausted.
-        /// </summary>
         [SerializeField] private float minSpeed = 2f;
 
-        /// <summary>
-        /// Acceleration used when the player is actively moving.
-        /// </summary>
         [SerializeField] private float acceleration = 15f;
-
-        /// <summary>
-        /// Deceleration applied when the player releases input.
-        /// </summary>
         [SerializeField] private float deceleration = 18f;
 
-        /// <summary>
-        /// Standard input smoothing time for responsive controls.
-        /// </summary>
         [SerializeField] private float inputSmoothTime = 0.08f;
-
-        /// <summary>
-        /// Slower input smoothing time that simulates delayed reactions at low energy.
-        /// </summary>
         [SerializeField] private float lowEnergyInputSmoothTime = 0.25f;
-
-        /// <summary>
-        /// Energy value at or below this threshold triggers input delay behavior.
-        /// </summary>
         [SerializeField] private float lowEnergyThreshold = 20f;
 
-        /// <summary>
-        /// Prevents tiny input noise from draining energy or causing drift.
-        /// </summary>
-        [SerializeField] private float movementDeadZone = 0.1f;
+        [SerializeField] private float inputDeadZone = 0.1f;
         #endregion
 
         #region Private Fields
-        /// <summary>
-        /// Raw input read from the player this frame.
-        /// </summary>
+        private PlayerControls controls;
+
         private Vector2 rawInput;
-
-        /// <summary>
-        /// Smoothed input used for movement and delayed response at low energy.
-        /// </summary>
         private Vector2 smoothedInput;
-
-        /// <summary>
-        /// Velocity reference required by SmoothDamp for input smoothing.
-        /// </summary>
         private Vector2 inputSmoothVelocity;
-
-        /// <summary>
-        /// Cached movement velocity to support smooth acceleration and deceleration.
-        /// </summary>
         private Vector2 currentVelocity;
         #endregion
 
-        #region Unity Callbacks
-        /// <summary>
-        /// Auto-assigns component references when the script is first added.
-        /// </summary>
+        #region Properties
+        public bool IsMoving => currentVelocity.sqrMagnitude > 0.0001f;
+        #endregion
+
+        #region Unity Lifecycle
         private void Reset()
         {
             body = GetComponent<Rigidbody2D>();
+            if (body != null)
+            {
+                body.gravityScale = 0f;
+            }
         }
 
-        /// <summary>
-        /// Ensures all required references are ready before gameplay begins.
-        /// </summary>
         private void Awake()
         {
             if (body == null)
@@ -101,75 +54,151 @@ namespace FadeToGrey
                 body = GetComponent<Rigidbody2D>();
             }
 
+            if (body != null)
+            {
+                body.gravityScale = 0f;
+                body.linearVelocity = Vector2.zero;
+            }
+
             if (energySystem == null)
             {
-                energySystem = FindObjectOfType<EnergySystem>();
+                energySystem = FindFirstObjectByType<EnergySystem>();
             }
+
+            controls = new PlayerControls();
+            controls.Player.SetCallbacks(this);
+            ClearInputState();
         }
 
-        /// <summary>
-        /// Reads input every frame and applies energy-based input delay.
-        /// </summary>
+        private void OnEnable()
+        {
+            controls?.Enable();
+            ClearInputState();
+            StopImmediately();
+        }
+
+        private void OnDisable()
+        {
+            controls?.Disable();
+            ClearInputState();
+            StopImmediately();
+        }
+
+        private void OnDestroy()
+        {
+            controls?.Dispose();
+        }
+
         private void Update()
         {
-            ReadInput();
             UpdateSmoothedInput();
         }
 
-        /// <summary>
-        /// Applies velocity changes in FixedUpdate for consistent physics behavior.
-        /// </summary>
         private void FixedUpdate()
         {
             ApplyMovement();
         }
         #endregion
 
-        #region Input Handling
-        /// <summary>
-        /// Reads raw axis input and clamps it for consistent top-down control.
-        /// </summary>
-        private void ReadInput()
+        #region Input System Callback
+        public void OnMove(InputAction.CallbackContext context)
         {
-            // Raw input preserves quick direction changes before we apply delay.
-            rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            if (context.canceled)
+            {
+                rawInput = Vector2.zero;
+                return;
+            }
+
+            rawInput = context.ReadValue<Vector2>();
             rawInput = Vector2.ClampMagnitude(rawInput, 1f);
-        }
-
-        /// <summary>
-        /// Applies smooth damping to input to simulate sluggish reaction time at low energy.
-        /// </summary>
-        private void UpdateSmoothedInput()
-        {
-            float currentEnergy = energySystem != null ? energySystem.CurrentEnergy : 100f;
-            float smoothTime = currentEnergy <= lowEnergyThreshold ? lowEnergyInputSmoothTime : inputSmoothTime;
-
-            // SmoothDamp creates a visible response delay, reinforcing the fatigue theme.
-            smoothedInput = Vector2.SmoothDamp(smoothedInput, rawInput, ref inputSmoothVelocity, smoothTime);
         }
         #endregion
 
         #region Movement
-        /// <summary>
-        /// Calculates speed from energy and applies smooth acceleration and deceleration.
-        /// </summary>
+        private void UpdateSmoothedInput()
+        {
+            rawInput = ApplyDeadZone(rawInput, inputDeadZone);
+
+            if (rawInput == Vector2.zero)
+            {
+                smoothedInput = Vector2.zero;
+                inputSmoothVelocity = Vector2.zero;
+                return;
+            }
+
+            float smoothTime = GetInputSmoothTime();
+            smoothedInput = Vector2.SmoothDamp(
+                smoothedInput,
+                rawInput,
+                ref inputSmoothVelocity,
+                smoothTime
+            );
+        }
+
         private void ApplyMovement()
         {
+            if (body == null)
+            {
+                return;
+            }
+
+            if (smoothedInput == Vector2.zero)
+            {
+                currentVelocity = Vector2.zero;
+                body.linearVelocity = Vector2.zero;
+                return;
+            }
+
             float normalizedEnergy = energySystem != null ? energySystem.NormalizedEnergy : 1f;
             float targetSpeed = Mathf.Lerp(minSpeed, maxSpeed, normalizedEnergy);
-
-            // Lower energy reduces top speed, reinforcing the color-as-energy metaphor.
             Vector2 desiredVelocity = smoothedInput * targetSpeed;
-            float accel = smoothedInput.sqrMagnitude > movementDeadZone * movementDeadZone ? acceleration : deceleration;
 
-            // MoveTowards avoids overshoot while keeping motion responsive.
-            currentVelocity = Vector2.MoveTowards(currentVelocity, desiredVelocity, accel * Time.fixedDeltaTime);
+            float accel = desiredVelocity.sqrMagnitude >= currentVelocity.sqrMagnitude
+                ? acceleration
+                : deceleration;
+
+            currentVelocity = Vector2.MoveTowards(
+                currentVelocity,
+                desiredVelocity,
+                accel * Time.fixedDeltaTime
+            );
+
             body.linearVelocity = currentVelocity;
 
-            if (energySystem != null && smoothedInput.sqrMagnitude > movementDeadZone * movementDeadZone)
+            if (energySystem != null)
             {
-                // Drain energy only when the player is actively moving.
                 energySystem.DrainForMovement(smoothedInput.magnitude, Time.fixedDeltaTime);
+            }
+        }
+        #endregion
+
+        #region Helpers
+        private float GetInputSmoothTime()
+        {
+            float currentEnergy = energySystem != null ? energySystem.CurrentEnergy : 100f;
+            return currentEnergy <= lowEnergyThreshold
+                ? lowEnergyInputSmoothTime
+                : inputSmoothTime;
+        }
+
+        private static Vector2 ApplyDeadZone(Vector2 value, float deadZone)
+        {
+            return value.sqrMagnitude <= deadZone * deadZone ? Vector2.zero : value;
+        }
+
+        private void ClearInputState()
+        {
+            rawInput = Vector2.zero;
+            smoothedInput = Vector2.zero;
+            inputSmoothVelocity = Vector2.zero;
+            currentVelocity = Vector2.zero;
+        }
+
+        private void StopImmediately()
+        {
+            if (body != null)
+            {
+                body.linearVelocity = Vector2.zero;
             }
         }
         #endregion

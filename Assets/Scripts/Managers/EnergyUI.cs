@@ -1,3 +1,4 @@
+// NEW FILE
 using TMPro;
 using UnityEngine;
 
@@ -53,7 +54,7 @@ namespace FadeToGrey
         {
             if (energySystem == null)
             {
-                energySystem = FindObjectOfType<EnergySystem>();
+                energySystem = FindFirstObjectByType<EnergySystem>();
             }
 
             if (energyText == null)
@@ -139,3 +140,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

@@ -1,3 +1,4 @@
+// NEW FILE
 using UnityEngine;
 
 namespace FadeToGrey
@@ -72,3 +73,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

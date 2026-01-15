@@ -1,3 +1,4 @@
+// NEW FILE
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -65,3 +66,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

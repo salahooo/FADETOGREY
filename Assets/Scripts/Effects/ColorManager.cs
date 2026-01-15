@@ -1,3 +1,4 @@
+// NEW FILE
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -51,12 +52,12 @@ namespace FadeToGrey
         {
             if (energySystem == null)
             {
-                energySystem = FindObjectOfType<EnergySystem>();
+                energySystem = FindFirstObjectByType<EnergySystem>();
             }
 
             if (volume == null)
             {
-                volume = FindObjectOfType<Volume>();
+                volume = FindFirstObjectByType<Volume>();
             }
 
             if (volume != null && volume.profile != null)
@@ -119,3 +120,4 @@ namespace FadeToGrey
         #endregion
     }
 }
+

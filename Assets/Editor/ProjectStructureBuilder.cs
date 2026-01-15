@@ -1,3 +1,4 @@
+// NEW FILE
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
@@ -127,3 +128,4 @@ namespace FadeToGrey.EditorTools
     }
 }
 #endif
+
