@@ -1,172 +1,131 @@
-// NEW FILE
-using System;
 using UnityEngine;
+using System;
 
-namespace FadeToGrey
+/// <summary>
+/// Manages player energy using an exhaustion-based model.
+/// - Energy drains while moving
+/// - Recovery starts ONLY after depletion
+/// - Recovery is paused if the player starts moving
+/// </summary>
+public class EnergySystem : MonoBehaviour
 {
+    // -------------------- SETTINGS --------------------
+
+    [Header("Energy")]
+    [SerializeField] private float maxEnergy = 100f;
+    [SerializeField] private float startEnergy = 100f;
+
+    [Header("Drain")]
+    [SerializeField] private float passiveDrainPerSecond = 12f;
+
+    [Header("Recovery")]
+    [SerializeField] private float recoveryPerSecond = 15f;
+
+    [Tooltip("Energy % required to regain movement")]
+    [Range(0f, 1f)]
+    [SerializeField] private float recoveryUnlockThreshold = 0.3f;
+
+    // -------------------- STATE --------------------
+
+    public float CurrentEnergy { get; private set; }
+    public bool IsExhausted { get; private set; }
+
     /// <summary>
-    /// Core energy model that drives movement speed, post-processing saturation, and audio filtering.
+    /// Set externally by PlayerController.
+    /// Represents movement intent, NOT actual velocity.
     /// </summary>
-    public class EnergySystem : MonoBehaviour
+    public bool IsMoving { get; set; }
+
+    // -------------------- EVENTS --------------------
+
+    public event Action<float> OnEnergyChanged;
+
+    // -------------------- UNITY --------------------
+
+    private void Awake()
     {
-        #region Serialized Fields
-        /// <summary>
-        /// Maximum energy value. Default is 100 to match the design specification.
-        /// </summary>
-        [SerializeField] private float maxEnergy = 100f;
+        CurrentEnergy = Mathf.Clamp(startEnergy, 0f, maxEnergy);
+        IsExhausted = false;
+        NotifyEnergyChanged();
+    }
 
-        /// <summary>
-        /// Energy value assigned at startup.
-        /// </summary>
-        [SerializeField] private float startingEnergy = 100f;
+    private void Update()
+    {
+        HandleRecovery(Time.deltaTime);
+    }
 
-        /// <summary>
-        /// Base energy drain per second while moving.
-        /// </summary>
-        [SerializeField] private float movementDrainPerSecond = 6f;
+    // -------------------- DRAIN --------------------
 
-        /// <summary>
-        /// Multiplier applied when obstacles deal damage.
-        /// </summary>
-        [SerializeField] private float obstacleDamageMultiplier = 1f;
+    public void DrainOverTime(float deltaTime)
+    {
+        if (IsExhausted)
+            return;
 
-        /// <summary>
-        /// Multiplier applied to energy restoration pickups.
-        /// </summary>
-        [SerializeField] private float pickupRestoreMultiplier = 1f;
-        #endregion
+        Drain(passiveDrainPerSecond * deltaTime);
+    }
 
-        #region Events
-        /// <summary>
-        /// Raised whenever the energy value changes.
-        /// </summary>
-        public event Action<float> OnEnergyChanged;
-        #endregion
+    public void Drain(float amount)
+    {
+        if (amount <= 0f || IsExhausted)
+            return;
 
-        #region Properties
-        /// <summary>
-        /// Current energy value, clamped between 0 and the maximum.
-        /// </summary>
-        public float CurrentEnergy => currentEnergy;
+        SetEnergy(CurrentEnergy - amount);
 
-        /// <summary>
-        /// Maximum possible energy value.
-        /// </summary>
-        public float MaxEnergy => maxEnergy;
-
-        /// <summary>
-        /// Current energy as a 0-1 normalized value.
-        /// </summary>
-        public float NormalizedEnergy => maxEnergy <= 0f ? 0f : currentEnergy / maxEnergy;
-        #endregion
-
-        #region Private Fields
-        /// <summary>
-        /// Backing field for the current energy.
-        /// </summary>
-        private float currentEnergy;
-        #endregion
-
-        #region Unity Callbacks
-        /// <summary>
-        /// Initializes the energy value before gameplay begins.
-        /// </summary>
-        private void Awake()
+        if (CurrentEnergy <= 0f)
         {
-            currentEnergy = Mathf.Clamp(startingEnergy, 0f, maxEnergy);
+            EnterExhaustion();
+        }
+    }
+
+    // -------------------- RECOVERY --------------------
+
+    private void HandleRecovery(float deltaTime)
+    {
+        // Recover ONLY if exhausted AND player is NOT moving
+        if (!IsExhausted || IsMoving)
+            return;
+
+        SetEnergy(CurrentEnergy + recoveryPerSecond * deltaTime);
+
+        // Unlock movement early
+        if (NormalizedEnergy() >= recoveryUnlockThreshold)
+        {
+            IsExhausted = false;
         }
 
-        /// <summary>
-        /// Broadcasts the initial energy value once the scene starts.
-        /// </summary>
-        private void Start()
+        // Clamp safety
+        if (CurrentEnergy >= maxEnergy)
         {
-            RaiseEnergyChanged();
+            SetEnergy(maxEnergy);
         }
-        #endregion
+    }
 
-        #region Public Methods
-        /// <summary>
-        /// Drains energy based on movement intensity and elapsed time.
-        /// </summary>
-        /// <param name="movementMagnitude">Magnitude of movement input from 0-1.</param>
-        /// <param name="deltaTime">Time step used to scale drain.</param>
-        public void DrainForMovement(float movementMagnitude, float deltaTime)
-        {
-            if (movementMagnitude <= 0f || deltaTime <= 0f)
-            {
-                return;
-            }
+    private void EnterExhaustion()
+    {
+        IsExhausted = true;
+        SetEnergy(0f);
+    }
 
-            float amount = movementDrainPerSecond * movementMagnitude * deltaTime;
-            ModifyEnergy(-amount);
-        }
+    // -------------------- UTIL --------------------
 
-        /// <summary>
-        /// Applies additional drain when the player collides with an obstacle.
-        /// </summary>
-        /// <param name="damage">Base damage value supplied by the obstacle.</param>
-        public void ApplyObstacleDamage(float damage)
-        {
-            if (damage <= 0f)
-            {
-                return;
-            }
+    public float NormalizedEnergy()
+    {
+        return maxEnergy <= 0f ? 0f : CurrentEnergy / maxEnergy;
+    }
 
-            float amount = damage * obstacleDamageMultiplier;
-            ModifyEnergy(-amount);
-        }
+    private void SetEnergy(float value)
+    {
+        float clamped = Mathf.Clamp(value, 0f, maxEnergy);
 
-        /// <summary>
-        /// Restores energy when the player collects a pickup.
-        /// </summary>
-        /// <param name="amount">Base amount to restore.</param>
-        public void RestoreEnergy(float amount)
-        {
-            if (amount <= 0f)
-            {
-                return;
-            }
+        if (Mathf.Approximately(clamped, CurrentEnergy))
+            return;
 
-            float scaledAmount = amount * pickupRestoreMultiplier;
-            ModifyEnergy(scaledAmount);
-        }
+        CurrentEnergy = clamped;
+        NotifyEnergyChanged();
+    }
 
-        /// <summary>
-        /// Directly sets energy to a specific value.
-        /// </summary>
-        /// <param name="value">New energy value to apply.</param>
-        public void SetEnergy(float value)
-        {
-            ModifyEnergy(value - currentEnergy);
-        }
-        #endregion
-
-        #region Private Methods
-        /// <summary>
-        /// Modifies the current energy by a delta and clamps it to valid bounds.
-        /// </summary>
-        /// <param name="delta">Change in energy to apply.</param>
-        private void ModifyEnergy(float delta)
-        {
-            float previous = currentEnergy;
-            // Clamp to keep the energy contract consistent across all systems.
-            currentEnergy = Mathf.Clamp(currentEnergy + delta, 0f, maxEnergy);
-
-            if (!Mathf.Approximately(previous, currentEnergy))
-            {
-                RaiseEnergyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Invokes the energy changed event.
-        /// </summary>
-        private void RaiseEnergyChanged()
-        {
-            OnEnergyChanged?.Invoke(currentEnergy);
-        }
-        #endregion
+    private void NotifyEnergyChanged()
+    {
+        OnEnergyChanged?.Invoke(CurrentEnergy);
     }
 }
-
