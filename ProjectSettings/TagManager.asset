@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - PlayerAttack
   layers:
   - Default
   - TransparentFX
@@ -52,6 +53,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 2305252617
+    locked: 0
+  - name: Effects
+    uniqueID: 2111363173
     locked: 0
   m_RenderingLayers:
   - Default

@@ -30,6 +30,9 @@ public class EnergySystem : MonoBehaviour
     public float CurrentEnergy { get; private set; }
     public bool IsExhausted { get; private set; }
 
+    public float MaxEnergy => maxEnergy;
+
+
     /// <summary>
     /// Set externally by PlayerController.
     /// Represents movement intent, NOT actual velocity.
@@ -128,4 +131,14 @@ public class EnergySystem : MonoBehaviour
     {
         OnEnergyChanged?.Invoke(CurrentEnergy);
     }
+
+
+    public void Restore(float amount)
+    {
+        if (amount <= 0f)
+            return;
+
+        SetEnergy(CurrentEnergy + amount);
+    }
+
 }

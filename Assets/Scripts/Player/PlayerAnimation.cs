@@ -34,5 +34,13 @@ public class PlayerAnimation : MonoBehaviour
             animator.SetFloat("LastX", lastMoveDir.x);
             animator.SetFloat("LastY", lastMoveDir.y);
         }
+        GetComponent<PlayerAttack>()?.SetLastDirection(lastMoveDir);
+
     }
+
+        public void TriggerStab()
+    {
+        animator.SetTrigger("Stab");
+    }
+
 }
