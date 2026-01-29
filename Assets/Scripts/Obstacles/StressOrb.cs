@@ -1,82 +1,122 @@
-// NEW FILE
 using UnityEngine;
 
-namespace FadeToGrey
+/// <summary>
+/// StressOrb:
+/// - Detects player
+/// - Follows player while in range
+/// - Drains energy
+/// - Gets knocked back and dies when stabbed
+/// </summary>
+[RequireComponent(typeof(Rigidbody2D))]
+public class StressOrb : MonoBehaviour
 {
-    /// <summary>
-    /// Obstacle that slowly homes toward the player using Rigidbody2D velocity steering.
-    /// </summary>
-    [RequireComponent(typeof(Rigidbody2D))]
-    public class StressOrb : ObstacleBase
+    [Header("Detection")]
+    [SerializeField] private float detectionRadius = 3f;
+
+    [Header("Movement")]
+    [SerializeField] private float followSpeed = 3f;
+
+    [Header("Energy Drain")]
+    [SerializeField] private float drainPerSecond = 10f;
+
+    [Header("Death / Knockback")]
+    [SerializeField] private float knockbackSpeed = 6f;
+    [SerializeField] private float destroyDelay = 0.15f;
+
+    private Transform player;
+    private EnergySystem playerEnergy;
+    private Rigidbody2D rb;
+
+    private bool isChasing;
+    private bool isDying;
+
+    private void Awake()
     {
-        #region Serialized Fields
-        /// <summary>
-        /// Rigidbody2D used to move the orb with physics interactions.
-        /// </summary>
-        [SerializeField] private Rigidbody2D body;
-
-        /// <summary>
-        /// Target the orb will pursue, typically the player.
-        /// </summary>
-        [SerializeField] private Transform target;
-
-        /// <summary>
-        /// Maximum speed of the homing movement.
-        /// </summary>
-        [SerializeField] private float moveSpeed = 2.5f;
-
-        /// <summary>
-        /// Steering responsiveness toward the target.
-        /// </summary>
-        [SerializeField] private float steeringSharpness = 4f;
-        #endregion
-
-        #region Unity Callbacks
-        /// <summary>
-        /// Ensures references are assigned before behavior begins.
-        /// </summary>
-        private void Awake()
-        {
-            if (body == null)
-            {
-                body = GetComponent<Rigidbody2D>();
-            }
-        }
-
-        /// <summary>
-        /// Attempts to locate the player if no target is assigned.
-        /// </summary>
-        private void Start()
-        {
-            if (target == null)
-            {
-                GameObject player = GameObject.FindGameObjectWithTag("Player");
-                if (player != null)
-                {
-                    target = player.transform;
-                }
-            }
-        }
-        #endregion
-
-        #region Behavior
-        /// <summary>
-        /// Steers the orb toward the target with gentle homing motion.
-        /// </summary>
-        protected override void ApplyBehavior()
-        {
-            if (body == null || target == null)
-            {
-                return;
-            }
-
-            Vector2 toTarget = (target.position - transform.position).normalized;
-            Vector2 desiredVelocity = toTarget * moveSpeed;
-
-            // Lerp provides a subtle, lingering pursuit rather than an instant snap.
-            body.linearVelocity = Vector2.Lerp(body.linearVelocity, desiredVelocity, steeringSharpness * Time.deltaTime);
-        }
-        #endregion
+        rb = GetComponent<Rigidbody2D>();
     }
-}
 
+    private void FixedUpdate()
+    {
+        if (!isChasing || player == null || isDying)
+            return;
+
+        Vector2 dir = (player.position - transform.position).normalized;
+        rb.linearVelocity = dir * followSpeed;
+    }
+
+    private void Update()
+    {
+        if (isChasing && playerEnergy != null && !isDying)
+        {
+            playerEnergy.Drain(drainPerSecond * Time.deltaTime);
+        }
+    }
+
+    // -------------------- DETECTION --------------------
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (isDying)
+            return;
+
+        if (other.CompareTag("Player"))
+        {
+            player = other.transform;
+            playerEnergy = other.GetComponent<EnergySystem>();
+            isChasing = true;
+        }
+
+        if (other.CompareTag("PlayerAttack"))
+        {
+            DieWithKnockback(other.transform);
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            StopChasing();
+        }
+    }
+
+    // -------------------- HELPERS --------------------
+
+    private void StopChasing()
+    {
+        isChasing = false;
+        player = null;
+        playerEnergy = null;
+
+        // 🔑 CRITICAL FIX: stop movement
+        rb.linearVelocity = Vector2.zero;
+    }
+
+    // -------------------- DEATH --------------------
+
+    private void DieWithKnockback(Transform attacker)
+    {
+        if (isDying)
+            return;
+
+        isDying = true;
+        isChasing = false;
+
+        player = null;
+        playerEnergy = null;
+
+        Vector2 knockDir = (transform.position - attacker.position).normalized;
+
+        rb.linearVelocity = knockDir * knockbackSpeed;
+
+        Destroy(gameObject, destroyDelay);
+    }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+    }
+#endif
+}
