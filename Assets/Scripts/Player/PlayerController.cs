@@ -3,8 +3,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Handles top-down player movement using Rigidbody2D.
-/// Movement speed is affected by the player's current energy.
-/// Fully respects exhaustion state.
+/// Supports sprinting and integrates with the EnergySystem exhaustion model.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(PlayerAnimation))]
@@ -19,10 +18,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float deceleration = 25f;
     [SerializeField] private float inputDeadzone = 0.1f;
 
+    [Header("Sprinting")]
+    [SerializeField] private float sprintSpeedMultiplier = 1.6f;
+    [SerializeField] private float sprintDrainMultiplier = 2.5f;
+
     [Header("Energy Influence")]
     [SerializeField] private float minEnergySpeedMultiplier = 0.25f;
 
-    // -------------------- COMPONENT REFERENCES --------------------
+    
+    // -------------------- COMPONENTS --------------------
 
     private Rigidbody2D rb;
     private PlayerAnimation playerAnimation;
@@ -32,6 +36,7 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 rawInput;
     private Vector2 smoothedInput;
+    private bool isSprinting;
 
     private PlayerControls controls;
 
@@ -44,16 +49,22 @@ public class PlayerController : MonoBehaviour
         energySystem = GetComponent<EnergySystem>();
 
         controls = new PlayerControls();
+
         controls.Player.Move.performed += OnMove;
         controls.Player.Move.canceled += _ => rawInput = Vector2.zero;
+
+        controls.Player.Sprint.performed += _ => isSprinting = true;
+        controls.Player.Sprint.canceled += _ => isSprinting = false;
     }
+
+    
 
     private void OnEnable() => controls.Enable();
     private void OnDisable() => controls.Disable();
 
     private void FixedUpdate()
     {
-        // Report movement intent to EnergySystem
+        // Report movement intent (used by EnergySystem recovery logic)
         energySystem.IsMoving = IsMovingIntent();
 
         if (energySystem.IsExhausted)
@@ -63,6 +74,14 @@ public class PlayerController : MonoBehaviour
             playerAnimation.UpdateAnimation(Vector2.zero);
             return;
         }
+
+        if (TryGetComponent<PlayerAttack>(out var attack) && attack.IsAttacking)
+        {
+            rb.linearVelocity = Vector2.zero;
+            playerAnimation.UpdateAnimation(Vector2.zero);
+            return;
+        }
+
 
         UpdateSmoothedInput();
         ApplyMovement();
@@ -109,7 +128,14 @@ public class PlayerController : MonoBehaviour
             energyFactor
         );
 
-        Vector2 targetVelocity = smoothedInput * maxSpeed * speedMultiplier;
+        float finalSpeed = maxSpeed * speedMultiplier;
+
+        if (isSprinting && IsMovingIntent())
+        {
+            finalSpeed *= sprintSpeedMultiplier;
+        }
+
+        Vector2 targetVelocity = smoothedInput * finalSpeed;
 
         rb.linearVelocity = Vector2.MoveTowards(
             rb.linearVelocity,
@@ -129,10 +155,11 @@ public class PlayerController : MonoBehaviour
 
     private void DrainEnergyIfMoving()
     {
-        if (IsMovingIntent())
-        {
-            energySystem.DrainOverTime(Time.fixedDeltaTime);
-        }
+        if (!IsMovingIntent())
+            return;
+
+        float drainMultiplier = isSprinting ? sprintDrainMultiplier : 1f;
+        energySystem.DrainOverTime(Time.fixedDeltaTime * drainMultiplier);
     }
 
     private bool IsMovingIntent()
