@@ -1,12 +1,6 @@
 using UnityEngine;
 using System;
 
-/// <summary>
-/// Manages player energy using an exhaustion-based model.
-/// - Energy drains while moving
-/// - Recovery starts ONLY after depletion
-/// - Recovery is paused if the player starts moving
-/// </summary>
 public class EnergySystem : MonoBehaviour
 {
     // -------------------- SETTINGS --------------------
@@ -29,18 +23,12 @@ public class EnergySystem : MonoBehaviour
 
     public float CurrentEnergy { get; private set; }
     public bool IsExhausted { get; private set; }
-
     public float MaxEnergy => maxEnergy;
 
-
-    /// <summary>
-    /// Set externally by PlayerController.
-    /// Represents movement intent, NOT actual velocity.
-    /// </summary>
+    // Wordt gezet door je PlayerMovement script
     public bool IsMoving { get; set; }
 
     // -------------------- EVENTS --------------------
-
     public event Action<float> OnEnergyChanged;
 
     // -------------------- UNITY --------------------
@@ -49,28 +37,27 @@ public class EnergySystem : MonoBehaviour
     {
         CurrentEnergy = Mathf.Clamp(startEnergy, 0f, maxEnergy);
         IsExhausted = false;
-        NotifyEnergyChanged();
     }
 
     private void Update()
     {
+        // Voor testdoeleinden: Als je geen movement script hebt, zet dit aan om drain te testen:
+        // DrainOverTime(Time.deltaTime); 
+        
         HandleRecovery(Time.deltaTime);
     }
 
-    // -------------------- DRAIN --------------------
+    // -------------------- LOGIC --------------------
 
     public void DrainOverTime(float deltaTime)
     {
-        if (IsExhausted)
-            return;
-
+        if (IsExhausted) return;
         Drain(passiveDrainPerSecond * deltaTime);
     }
 
     public void Drain(float amount)
     {
-        if (amount <= 0f || IsExhausted)
-            return;
+        if (amount <= 0f || IsExhausted) return;
 
         SetEnergy(CurrentEnergy - amount);
 
@@ -80,26 +67,21 @@ public class EnergySystem : MonoBehaviour
         }
     }
 
-    // -------------------- RECOVERY --------------------
-
     private void HandleRecovery(float deltaTime)
     {
-        // Recover ONLY if exhausted AND player is NOT moving
-        if (!IsExhausted || IsMoving)
-            return;
-
-        SetEnergy(CurrentEnergy + recoveryPerSecond * deltaTime);
-
-        // Unlock movement early
-        if (NormalizedEnergy() >= recoveryUnlockThreshold)
+        if (!IsExhausted && !IsMoving && CurrentEnergy < maxEnergy)
         {
-            IsExhausted = false;
+             SetEnergy(CurrentEnergy + (recoveryPerSecond * 0.5f) * deltaTime);
         }
 
-        // Clamp safety
-        if (CurrentEnergy >= maxEnergy)
+        if (IsExhausted && !IsMoving)
         {
-            SetEnergy(maxEnergy);
+            SetEnergy(CurrentEnergy + recoveryPerSecond * deltaTime);
+
+            if (NormalizedEnergy() >= recoveryUnlockThreshold)
+            {
+                IsExhausted = false;
+            }
         }
     }
 
@@ -109,36 +91,24 @@ public class EnergySystem : MonoBehaviour
         SetEnergy(0f);
     }
 
-    // -------------------- UTIL --------------------
-
     public float NormalizedEnergy()
     {
         return maxEnergy <= 0f ? 0f : CurrentEnergy / maxEnergy;
     }
 
-    private void SetEnergy(float value)
+    public void SetEnergy(float value)
     {
         float clamped = Mathf.Clamp(value, 0f, maxEnergy);
-
-        if (Mathf.Approximately(clamped, CurrentEnergy))
-            return;
+        if (Mathf.Approximately(clamped, CurrentEnergy)) return;
 
         CurrentEnergy = clamped;
-        NotifyEnergyChanged();
-    }
-
-    private void NotifyEnergyChanged()
-    {
         OnEnergyChanged?.Invoke(CurrentEnergy);
     }
-
-
-    public void Restore(float amount)
+    
+    public void addEnergy(float amount)
     {
-        if (amount <= 0f)
-            return;
+        if (amount <= 0f) return;
 
         SetEnergy(CurrentEnergy + amount);
     }
-
 }
