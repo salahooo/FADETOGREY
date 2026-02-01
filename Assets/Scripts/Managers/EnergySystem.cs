@@ -9,23 +9,23 @@ public class EnergySystem : MonoBehaviour
     [SerializeField] private float maxEnergy = 100f;
     [SerializeField] private float startEnergy = 100f;
 
-    [Header("Drain")]
-    [SerializeField] private float passiveDrainPerSecond = 12f;
-
-    [Header("Recovery")]
+    [Header("Drain & Recovery")]
+    [SerializeField] private float passiveDrainPerSecond = 10f; // Iets hoger gezet voor test
     [SerializeField] private float recoveryPerSecond = 15f;
-
-    [Tooltip("Energy % required to regain movement")]
     [Range(0f, 1f)]
     [SerializeField] private float recoveryUnlockThreshold = 0.3f;
 
+    [Header("Debug / Testing")]
+    [Tooltip("Vink dit aan om energie verlies te testen zonder te bewegen")]
+    [SerializeField] private bool testAutoDrain = false; 
+
     // -------------------- STATE --------------------
 
-    public float CurrentEnergy { get; private set; }
+    // [field: SerializeField] zorgt dat je deze waarde live in de inspector ziet!
+    [field: SerializeField] public float CurrentEnergy { get; private set; }
     public bool IsExhausted { get; private set; }
     public float MaxEnergy => maxEnergy;
 
-    // Wordt gezet door je PlayerMovement script
     public bool IsMoving { get; set; }
 
     // -------------------- EVENTS --------------------
@@ -35,16 +35,30 @@ public class EnergySystem : MonoBehaviour
 
     private void Awake()
     {
-        CurrentEnergy = Mathf.Clamp(startEnergy, 0f, maxEnergy);
+        // Zet de energie op startwaarde bij begin
+        CurrentEnergy = startEnergy;
         IsExhausted = false;
     }
 
     private void Update()
     {
-        // Voor testdoeleinden: Als je geen movement script hebt, zet dit aan om drain te testen:
-        // DrainOverTime(Time.deltaTime); 
-        
-        HandleRecovery(Time.deltaTime);
+        // TEST MODUS: Als het vinkje aanstaat, doen we alsof we bewegen
+        if (testAutoDrain)
+        {
+            DrainOverTime(Time.deltaTime);
+        }
+        else
+        {
+            // NORMALE MODUS: Reageer op movement
+            if (IsMoving)
+            {
+                DrainOverTime(Time.deltaTime);
+            }
+            else
+            {
+                HandleRecovery(Time.deltaTime);
+            }
+        }
     }
 
     // -------------------- LOGIC --------------------
@@ -69,18 +83,24 @@ public class EnergySystem : MonoBehaviour
 
     private void HandleRecovery(float deltaTime)
     {
-        if (!IsExhausted && !IsMoving && CurrentEnergy < maxEnergy)
+        // Alleen recoveren als we NIET bewegen (en test modus uit staat)
+        if (IsMoving || testAutoDrain) return;
+
+        if (!IsExhausted && CurrentEnergy < maxEnergy)
         {
+             // Normaal herstel
              SetEnergy(CurrentEnergy + (recoveryPerSecond * 0.5f) * deltaTime);
         }
-
-        if (IsExhausted && !IsMoving)
+        else if (IsExhausted)
         {
+            // Herstel tijdens uitputting
             SetEnergy(CurrentEnergy + recoveryPerSecond * deltaTime);
 
+            // Als we boven de drempel (bv 30%) zijn, mag je weer bewegen
             if (NormalizedEnergy() >= recoveryUnlockThreshold)
             {
                 IsExhausted = false;
+                Debug.Log("Energy hersteld - Je mag weer bewegen!");
             }
         }
     }
@@ -99,14 +119,14 @@ public class EnergySystem : MonoBehaviour
     public void SetEnergy(float value)
     {
         float clamped = Mathf.Clamp(value, 0f, maxEnergy);
+        
         if (Mathf.Approximately(clamped, CurrentEnergy)) return;
 
         CurrentEnergy = clamped;
         OnEnergyChanged?.Invoke(CurrentEnergy);
     }
     
-    public void addEnergy(float amount)
-    {
+    public void AddEnergy(float amount) {
         if (amount <= 0f) return;
 
         SetEnergy(CurrentEnergy + amount);

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2357128659166899244}
   m_Layer: 0
   m_Name: StressOrb
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -172,5 +172,6 @@ MonoBehaviour:
   detectionRadius: 3
   followSpeed: 3
   drainPerSecond: 5
-  knockbackForce: 6
+  shakeInterval: 1
+  knockbackSpeed: 6
   destroyDelay: 0.5

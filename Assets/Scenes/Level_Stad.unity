@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 222158448}
   - component: {fileID: 222158447}
   - component: {fileID: 222158449}
+  - component: {fileID: 222158450}
   m_Layer: 0
   m_Name: GameManagers
   m_TagString: Untagged
@@ -198,6 +199,20 @@ MonoBehaviour:
   minStressOrbs: 4
   maxStressOrbs: 6
   minDistanceBetweenOrbs: 1.5
+--- !u!114 &222158450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 222158446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99a27f5f1fc9d7c4990b64fb4061dccb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
+  enemyCount: 0
+  enemyCounterText: {fileID: 1899730296}
 --- !u!1 &407386571
 GameObject:
   m_ObjectHideFlags: 0
@@ -6076,8 +6091,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88169ffa7959230468140ad5f7314991, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  uiObject: {fileID: 2073948267}
-  gateController: {fileID: 474755685}
 --- !u!61 &440899281
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6417,7 +6430,7 @@ TilemapRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.010638297, y: 0.010638297, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -39583,6 +39596,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   levelNaam: Level_Platteland
+  uiObject: {fileID: 1700086236}
+  isFinalLevel: 0
 --- !u!1 &1115921731
 GameObject:
   m_ObjectHideFlags: 0
@@ -39748,14 +39763,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1798738175337608736, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
-      propertyPath: m_RenderPostProcessing
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1798738175337608736, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
-      propertyPath: m_RequiresOpaqueTextureOption
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2540109317266417399, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
       propertyPath: target
       value: 
@@ -39804,37 +39811,23 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7442864287450888484, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
+      propertyPath: uiCanvas
+      value: 
+      objectReference: {fileID: 1700086239}
+    - target: {fileID: 7442864287450888484, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
+      propertyPath: energySystem
+      value: 
+      objectReference: {fileID: 1663341844438472068}
+    - target: {fileID: 7442864287450888484, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
+      propertyPath: globalVolume
+      value: 
+      objectReference: {fileID: 821439518}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5576970017623256207, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1544922903}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
---- !u!1 &1544922896 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5576970017623256207, guid: 922da7fe368e0174685ef9a657738ae4, type: 3}
-  m_PrefabInstance: {fileID: 1347544897}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1544922903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1544922896}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0993d0cf3a9d40449a817c63d79e4175, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EffectsController
-  energySystem: {fileID: 0}
-  globalVolume: {fileID: 821439518}
-  spotPrefab: {fileID: 6733526476383155551, guid: 162e8c7484ccc534fbd26fd3abf8d5a8, type: 3}
-  uiCanvas: {fileID: 1700086239}
-  minSaturation: -100
-  minExposure: -1.5
 --- !u!1 &1684701953
 GameObject:
   m_ObjectHideFlags: 0
@@ -42790,10 +42783,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas (1)
       objectReference: {fileID: 0}
-    - target: {fileID: 1807783549506217967, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -2933811294009664875, guid: e9f0c7a06a4cf594a8c13d0aaab67618, type: 3}
+    - target: {fileID: 4541432219327536682, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
+      propertyPath: m_text
+      value: Chapter 1 - I need to leave
+      objectReference: {fileID: 0}
+    - target: {fileID: 4541432219327536682, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
+      propertyPath: m_margin.z
+      value: -73.02905
+      objectReference: {fileID: 0}
     - target: {fileID: 7371995328154592401, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -42879,11 +42876,27 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
+--- !u!1 &1700086236 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 543878185131848302, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
+  m_PrefabInstance: {fileID: 1700086235}
+  m_PrefabAsset: {fileID: 0}
 --- !u!223 &1700086239 stripped
 Canvas:
   m_CorrespondingSourceObject: {fileID: 3706918374725600124, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
   m_PrefabInstance: {fileID: 1700086235}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1899730296 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6482581200309182361, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
+  m_PrefabInstance: {fileID: 1700086235}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &1944255925
 GameObject:
   m_ObjectHideFlags: 0
@@ -42962,11 +42975,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 15.6}
   m_EdgeRadius: 0
---- !u!1 &2073948267 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 543878185131848302, guid: aad3b1789b25af648a89a8b419fa23ef, type: 3}
-  m_PrefabInstance: {fileID: 1700086235}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2081687113
 GameObject:
   m_ObjectHideFlags: 0
@@ -43131,7 +43139,7 @@ TilemapRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.010638297, y: 0.010638297, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0

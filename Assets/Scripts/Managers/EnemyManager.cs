@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
@@ -8,6 +9,7 @@ public class EnemyManager : MonoBehaviour
     public static EnemyManager Instance;
     
     [SerializeField] private int enemyCount;
+    public TextMeshProUGUI enemyCounterText;
     
     private void Awake() {
         if (Instance == null) {
@@ -15,24 +17,25 @@ public class EnemyManager : MonoBehaviour
         }
     }
     
-    /**
-     * * Initializes the enemy count at the start of the game.
-     */
-    void Start() {
-        enemyCount = GameObject.FindGameObjectsWithTag(EnemyTag).Length;
-        Debug.Log("Initial Enemy Count: " + enemyCount);
-    }
-    
     public void EnemyDefeated() {
         enemyCount--;
+        enemyCounterText.text = enemyCount.ToString();
         
         if (enemyCount <= 0) {
+            if (GateController.Instance != null) {
+                GateController.Instance.SetGateState(true);
+            }
             Debug.Log("All enemies defeated!");
         }
         else {
-            enemyCount--;
             Debug.Log("Enemy Defeated! Remaining Enemies: " + enemyCount);
         }
+    }
+    
+    public void RegisterEnemy() {
+        enemyCount++;
+        enemyCounterText.text = enemyCount.ToString();
+        Debug.Log("Enemy Registered! Total Enemies: " + enemyCount);
     }
     
     /**

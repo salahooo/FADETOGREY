@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class GateController : MonoBehaviour
@@ -6,21 +7,38 @@ public class GateController : MonoBehaviour
         public Sprite openSprite;
         private bool isOpen = false;
         private SpriteRenderer spriteRenderer;
-        
+
+        public static GateController Instance;
+
+        private void Awake() {
+            if (Instance == null) {
+                Instance = this;
+            }
+        }
+
         private void Start()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
-            SetGateState(isOpen);
+            SetGateState(true);
         }
     
         public void SetGateState(bool open)
         {
             isOpen = open;
             spriteRenderer.sprite = isOpen ? openSprite : closedSprite;
-            BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
-            boxCollider.offset.Set(1.7f, boxCollider.offset.y);
-            boxCollider.size.Set(1.7f, boxCollider.size.y);
+            if (isOpen)
+            {
+                AdjustColliderForOpenGate();
+            }
         }
-
-        public bool IsOpen => isOpen;
+        
+        private void AdjustColliderForOpenGate()
+        {
+            BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
+            if (boxCollider != null)
+            {
+                boxCollider.size = new Vector2(1.7f, boxCollider.size.y);
+                boxCollider.offset = new Vector2(1.7f, boxCollider.offset.y);
+            }
+        }
 }

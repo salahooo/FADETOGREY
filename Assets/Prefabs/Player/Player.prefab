@@ -369,6 +369,8 @@ MonoBehaviour:
   passiveDrainPerSecond: 2
   recoveryPerSecond: 2
   recoveryUnlockThreshold: 0.3
+  testAutoDrain: 0
+  <CurrentEnergy>k__BackingField: 100
 --- !u!114 &6025420071713481142
 MonoBehaviour:
   m_ObjectHideFlags: 0

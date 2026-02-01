@@ -1,11 +1,12 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Random = UnityEngine.Random;
 
-public class EffectsController : MonoBehaviour
-{
-    [Header("References")]
-    public EnergySystem energySystem; // SLEEP HIER JE PLAYER/ENERGYSYSTEM OP
+public class EffectsController : MonoBehaviour {
+    [Header("References")] 
+    public EnergySystem energySystem;
     public Volume globalVolume;
     public GameObject spotPrefab;
     public Canvas uiCanvas;
@@ -19,6 +20,14 @@ public class EffectsController : MonoBehaviour
 
     // Interne variabelen
     private ColorAdjustments colorAdjustments;
+
+    public static EffectsController Instance;
+
+    private void Awake() {
+        if (Instance == null) {
+            Instance = this;
+        }
+    }
 
     void Start()
     {
@@ -66,7 +75,6 @@ public class EffectsController : MonoBehaviour
         // Als de speler uitgeput is en we hebben nog geen vlek geplaatst
         if (energySystem.IsExhausted && !hasTriggeredExhaustionEffect)
         {
-            AddDamageEffect();
             hasTriggeredExhaustionEffect = true;
         }
         // Reset de trigger als de speler weer energie heeft
@@ -102,13 +110,14 @@ public class EffectsController : MonoBehaviour
             newSpot.name = "Spot";
 
             RectTransform rect = newSpot.GetComponent<RectTransform>();
-            float x = Random.Range(-400, 400); // Iets verkleind voor veiligheid
+            float x = Random.Range(-800, 800);
             float y = Random.Range(-250f, 250f);
             rect.anchoredPosition = new Vector2(x, y);
             
             float randomScale = Random.Range(0.8f, 1.5f);
             rect.localScale = new Vector3(randomScale, randomScale, 1f);
             rect.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
+            CameraShaker.Instance.Shake(0.3f, 0.1f);
         }
     }
 }

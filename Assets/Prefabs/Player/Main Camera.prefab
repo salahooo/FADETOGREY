@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1798738175337608736}
   - component: {fileID: 2540109317266417399}
   - component: {fileID: 5405172350405537004}
+  - component: {fileID: 7442864287450888484}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -109,7 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
-  m_RequiresOpaqueTextureOption: 2
+  m_RequiresOpaqueTextureOption: 1
   m_CameraType: 0
   m_Cameras: []
   m_RendererIndex: -1
@@ -118,7 +119,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -165,3 +166,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb92453d29efd3b458ef4cdfad303223, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraShaker
+--- !u!114 &7442864287450888484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5576970017623256207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0993d0cf3a9d40449a817c63d79e4175, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EffectsController
+  energySystem: {fileID: 0}
+  globalVolume: {fileID: 0}
+  spotPrefab: {fileID: 6733526476383155551, guid: 162e8c7484ccc534fbd26fd3abf8d5a8, type: 3}
+  uiCanvas: {fileID: 0}
+  minSaturation: -100
+  minExposure: -1.5
