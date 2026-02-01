@@ -44,4 +44,15 @@ public class PlayerAttackHitbox : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(transform.position, size);
     }
+
+    private void OnTriggerEnter2D(Collider2D other)
+{
+    EnemyHealth enemy = other.GetComponent<EnemyHealth>();
+
+    if (enemy != null)
+    {
+        enemy.TakeDamage(1); // 1 hit damage
+    }
+}
+
 }
