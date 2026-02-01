@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -18,6 +19,10 @@ public class StressOrb : MonoBehaviour
 
     [Header("Energy Drain")]
     [SerializeField] private float drainPerSecond = 10f;
+    
+    [Header("Effects")]
+    [SerializeField] private float shakeInterval = 1.0f;
+    private float shakeTimer = 0f;
 
     [Header("Death / Knockback")]
     [SerializeField] private float knockbackSpeed = 6f;
@@ -35,6 +40,10 @@ public class StressOrb : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+    private void Start() {
+        EnemyManager.Instance.RegisterEnemy();
+    }
+
     private void FixedUpdate()
     {
         if (!isChasing || player == null || isDying)
@@ -49,6 +58,17 @@ public class StressOrb : MonoBehaviour
         if (isChasing && playerEnergy != null && !isDying)
         {
             playerEnergy.Drain(drainPerSecond * Time.deltaTime);
+            shakeTimer -= Time.deltaTime;
+
+            if (shakeTimer <= 0f)
+            {
+                EffectsController.Instance.AddDamageEffect();
+                shakeTimer = shakeInterval;
+            }
+        }
+        else
+        {
+            shakeTimer = 0f;
         }
     }
 
@@ -110,6 +130,10 @@ public class StressOrb : MonoBehaviour
         rb.linearVelocity = knockDir * knockbackSpeed;
 
         Destroy(gameObject, destroyDelay);
+    }
+
+    private void OnDestroy() {
+        EnemyManager.Instance.EnemyDefeated();
     }
 
 #if UNITY_EDITOR

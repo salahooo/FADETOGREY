@@ -27,7 +27,7 @@ public class EnergyOrb : MonoBehaviour
         float restorePercent = Random.Range(minRestorePercent, maxRestorePercent);
         float restoreAmount = restorePercent * energySystem.MaxEnergy;
 
-        energySystem.Restore(restoreAmount);
+        energySystem.AddEnergy(restoreAmount);
 
         Destroy(gameObject);
     }

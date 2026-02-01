@@ -21,7 +21,6 @@ public class CameraShaker : MonoBehaviour
         if (currentShakeRoutine != null)
         {
             StopCoroutine(currentShakeRoutine);
-            transform.localPosition = originalPos; // Reset voor de zekerheid
         }
         currentShakeRoutine = StartCoroutine(DoShake(duration, magnitude));
     }
@@ -36,7 +35,7 @@ public class CameraShaker : MonoBehaviour
             float x = Random.Range(-1f, 1f) * magnitude;
             float y = Random.Range(-1f, 1f) * magnitude;
 
-            transform.localPosition = new Vector3(originalPos.x + x, originalPos.y + y, originalPos.z);
+            transform.localPosition = new Vector3(transform.localPosition.x + x, transform.localPosition.y + y, transform.localPosition.z);
 
             elapsed += Time.deltaTime;
             // Wacht één frame
@@ -44,7 +43,7 @@ public class CameraShaker : MonoBehaviour
         }
 
         // Zet de camera terug op zijn plek
-        transform.localPosition = originalPos;
+        // transform.localPosition = originalPos;
         currentShakeRoutine = null;
     }
 }

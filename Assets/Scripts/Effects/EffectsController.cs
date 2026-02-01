@@ -1,116 +1,123 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Random = UnityEngine.Random;
 
-public class EffectsController : MonoBehaviour
-{
-    [Header("Settings")]
-    public Volume globalVolume; // Sleep hier je GlobalVolume object in
-    public GameObject spotPrefab; // Sleep hier je BloodSpotPrefab in
-    public Canvas uiCanvas; // Sleep hier je Canvas in
+public class EffectsController : MonoBehaviour {
+    [Header("References")] 
+    public EnergySystem energySystem;
+    public Volume globalVolume;
+    public GameObject spotPrefab;
+    public Canvas uiCanvas;
 
-    [Header("Game Over Settings")]
-    public float fadeSpeed = 0.5f;
+    [Header("Visual Settings")]
+    [Tooltip("Hoeveel saturatie bij 0 energie (-100 is zwart/wit)")]
+    public float minSaturation = -100f;
+    
+    [Tooltip("Hoe donker het beeld wordt bij 0 energie (-2 is vrij donker)")]
+    public float minExposure = -1.5f;
 
     // Interne variabelen
     private ColorAdjustments colorAdjustments;
-    private float currentSat = 0f; // In PostProcess is 0 normaal, -100 is zwart/wit
-    private float currentExposure = 0f; // 0 is normaal, lager is donkerder
-    public bool isFadingOut = true;
+
+    public static EffectsController Instance;
+
+    private void Awake() {
+        if (Instance == null) {
+            Instance = this;
+        }
+    }
 
     void Start()
     {
         // Haal de settings op uit het Volume profiel
-        if (globalVolume.profile.TryGet(out ColorAdjustments adj))
+        if (globalVolume != null && globalVolume.profile.TryGet(out ColorAdjustments adj))
         {
             colorAdjustments = adj;
         }
-        
+        else
+        {
+            Debug.LogWarning("Geen Global Volume of ColorAdjustments gevonden!");
+        }
+
         ResetEffects();
+    }
+
+    void Update()
+    {
+        if (energySystem == null || colorAdjustments == null) return;
+
+        UpdateVisuals();
+        CheckExhaustionTrigger();
+    }
+
+    private void UpdateVisuals()
+    {
+        // Haal genormaliseerde energie op (tussen 0.0 en 1.0)
+        float energyPercent = energySystem.NormalizedEnergy();
+
+        // Bereken de nieuwe waardes gebaseerd op energie
+        // Lerp gaat van A naar B. Als energy 1 is, pakken we 0. Als energy 0 is, pakken we minSaturation.
+        float targetSat = Mathf.Lerp(minSaturation, 0f, energyPercent);
+        float targetExp = Mathf.Lerp(minExposure, 0f, energyPercent);
+
+        // Pas de post processing aan
+        colorAdjustments.saturation.value = targetSat;
+        colorAdjustments.postExposure.value = targetExp;
+    }
+
+    // Houdt bij of we al een effect hebben gespawned voor deze uitputtings-sessie
+    private bool hasTriggeredExhaustionEffect = false;
+
+    private void CheckExhaustionTrigger()
+    {
+        // Als de speler uitgeput is en we hebben nog geen vlek geplaatst
+        if (energySystem.IsExhausted && !hasTriggeredExhaustionEffect)
+        {
+            hasTriggeredExhaustionEffect = true;
+        }
+        // Reset de trigger als de speler weer energie heeft
+        else if (!energySystem.IsExhausted)
+        {
+            hasTriggeredExhaustionEffect = false;
+        }
     }
 
     public void ResetEffects()
     {
-        isFadingOut = false;
-        currentSat = 0f;
-        currentExposure = 0f;
-        
-        // Reset Post Processing waarden
         if (colorAdjustments != null)
         {
             colorAdjustments.saturation.value = 0f;
             colorAdjustments.postExposure.value = 0f;
         }
 
-        // Verwijder alle oude vlekken
+        // Verwijder oude vlekken
         if (uiCanvas != null)
         {
             foreach (Transform child in uiCanvas.transform)
             {
-                // Let op: verwijder niet andere UI elementen als je die hebt!
                 if (child.name.Contains("Spot")) Destroy(child.gameObject);
             }
         }
     }
 
-    // --- PUBLIC FUNCTIES ---
-
     public void AddDamageEffect()
     {
-        // 1. Maak een vlek aan
         if (spotPrefab != null && uiCanvas != null)
         {
             GameObject newSpot = Instantiate(spotPrefab, uiCanvas.transform);
-            newSpot.name = "Spot"; // Zodat we hem later kunnen vinden
+            newSpot.name = "Spot";
 
-            // Zet hem op een willekeurige plek binnen het canvas
             RectTransform rect = newSpot.GetComponent<RectTransform>();
             float x = Random.Range(-800, 800);
-            float y = Random.Range(-450f, 450f);
+            float y = Random.Range(-250f, 250f);
             rect.anchoredPosition = new Vector2(x, y);
             
-            // Varieer de grootte en draaiing voor variatie
             float randomScale = Random.Range(0.8f, 1.5f);
             rect.localScale = new Vector3(randomScale, randomScale, 1f);
             rect.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
-        }
-
-        // 2. Camera Shake (optioneel, als je dat script nog hebt)
-        if (CameraShaker.Instance != null)
-        {
-            CameraShaker.Instance.Shake(0.3f, 0.2f);
-        }
-    }
-
-    public void StartGameOverFade()
-    {
-        isFadingOut = true;
-    }
-
-    void Update()
-    {
-        if (isFadingOut && colorAdjustments != null)
-        {
-            Debug.Log(currentSat + " | " + currentExposure);
-            // Stap 1: Kleur verliezen (Saturatie naar -100)
-            if (currentSat > -100f) 
-            {
-                currentSat -= Time.deltaTime * (fadeSpeed * 30f);
-                colorAdjustments.saturation.value = currentSat;
-            }
-            // Stap 2: Donker worden (Exposure omlaag)
-            else if (currentExposure > -5f) 
-            {
-                currentExposure -= Time.deltaTime * fadeSpeed;
-                colorAdjustments.postExposure.value = currentExposure;
-            }
-        }
-
-        // Check eerst of er wel een toetsenbord is aangesloten (voor de zekerheid)
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            AddDamageEffect();
+            CameraShaker.Instance.Shake(0.3f, 0.1f);
         }
     }
 }
