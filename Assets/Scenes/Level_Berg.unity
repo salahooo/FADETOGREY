@@ -46601,7 +46601,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OrbSpawner
   energyOrbPrefab: {fileID: 4507299708008374395, guid: e2e25f08ff16b7b47bb77b2300e94aea, type: 3}
   stressOrbPrefab: {fileID: 6242877235361171822, guid: c7e360c0276d6d64baa14706d79d17b8, type: 3}
-  minX: -29.3
+  minX: -23
   maxX: -10.19
   minY: -21.05
   maxY: -40.1

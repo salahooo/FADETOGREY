@@ -225,6 +225,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1663341844438472067}
+    - target: {fileID: 4297598097998535528, guid: 9c2a74b20f051fb429d46bd7c2a5d558, type: 3}
+      propertyPath: energyDamage
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 6704577553111424767, guid: 9c2a74b20f051fb429d46bd7c2a5d558, type: 3}
       propertyPath: m_Name
       value: EnemyMessages
@@ -39374,6 +39378,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1663341844438472067}
+    - target: {fileID: 3734965113453257849, guid: 330d27399a4ffdd4ca963e37490f3851, type: 3}
+      propertyPath: energyDamage
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 4869661987656390036, guid: 330d27399a4ffdd4ca963e37490f3851, type: 3}
       propertyPath: m_Name
       value: EnemyWolk
@@ -43043,6 +43051,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1663341844438472067}
+    - target: {fileID: 2516896829988059293, guid: 0e03104c20538da458cfabc3cc918c75, type: 3}
+      propertyPath: energyDamage
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 5954502259110335023, guid: 0e03104c20538da458cfabc3cc918c75, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.3558655
@@ -53680,6 +53692,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5450127771144072045, guid: c84f18c0cb30d524abed02e04a6b3125, type: 3}
+      propertyPath: sprintDrainMultiplier
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8333826059170702655, guid: c84f18c0cb30d524abed02e04a6b3125, type: 3}
       propertyPath: m_Name
       value: Player
@@ -53723,6 +53739,10 @@ PrefabInstance:
     - target: {fileID: 9027501803142168149, guid: c84f18c0cb30d524abed02e04a6b3125, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9212928171212138779, guid: c84f18c0cb30d524abed02e04a6b3125, type: 3}
+      propertyPath: passiveDrainPerSecond
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
