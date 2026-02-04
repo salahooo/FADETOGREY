@@ -131,11 +131,7 @@ public class StressOrb : MonoBehaviour
             isChasing = true;
         }
 
-        // Player attack hitbox collided with the orb
-        if (other.CompareTag("PlayerAttack"))
-        {
-            DieWithKnockback(other.transform);
-        }
+
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -162,7 +158,7 @@ public class StressOrb : MonoBehaviour
 
     /* -------------------- DEATH -------------------- */
 
-    private void DieWithKnockback(Transform attacker)
+    public void DieWithKnockback(Transform attacker)
     {
         // Prevent multiple death triggers
         if (isDying)

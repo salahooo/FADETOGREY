@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 222158447}
   - component: {fileID: 222158449}
   - component: {fileID: 222158450}
+  - component: {fileID: 222158451}
   m_Layer: 0
   m_Name: GameManagers
   m_TagString: Untagged
@@ -213,6 +214,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   enemyCount: 0
   enemyCounterText: {fileID: 1899730296}
+--- !u!114 &222158451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 222158446}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2c323dd3c6b1a6448e232aa5244bae0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicEnergyController
+  mixer: {fileID: 24100000, guid: 0f869f7c4e9719e4cb444b1425d0bf50, type: 2}
+  energySystem: {fileID: 1663341844438472068}
+  minCutoff: 800
+  maxCutoff: 22000
+  smoothTime: 0.4
 --- !u!1001 &373680874
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53765,6 +53783,79 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d91a6e3b756d6542a3948f319a14f16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnergySystem
+--- !u!1001 &3809878660252946312
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1580026386705121266, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_Name
+      value: 'BackgroundMusic '
+      objectReference: {fileID: 0}
+    - target: {fileID: 1580026386705121266, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1580026386705121266, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2396192739327911340, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.96
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -48.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097372689408616115, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072556800403832649, guid: 95a90ef2402bb02479599c2441404345, type: 3}
+      propertyPath: energySystem
+      value: 
+      objectReference: {fileID: 1663341844438472068}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 95a90ef2402bb02479599c2441404345, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -53783,3 +53874,4 @@ SceneRoots:
   - {fileID: 1934607541}
   - {fileID: 758304632}
   - {fileID: 373680874}
+  - {fileID: 3809878660252946312}
